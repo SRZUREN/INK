@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK AI - Discord Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #36393f;
+            height: 100vh;
+            overflow: hidden;
+            color: #dcddde;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 72px;
+            background-color: #202225;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-radius 0.2s;
+            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .server-icon:hover {
+            border-radius: 16px;
+        }
+
+        .channels-sidebar {
+            width: 240px;
+            background-color: #2f3136;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .server-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #202225;
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+            box-shadow: 0 1px 0 rgba(4,4,5,0.2), 0 1.5px 0 rgba(6,6,7,0.05), 0 2px 0 rgba(4,4,5,0.05);
+        }
+
+        .channels-list {
+            flex: 1;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        .channel-category {
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8e9297;
+            padding: 16px 8px 4px 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .channel {
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: #96989d;
+            font-size: 15px;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .channel:hover {
+            background-color: #34373c;
+            color: #dcddde;
+        }
+
+        .channel.active {
+            background-color: #393c43;
+            color: #fff;
+        }
+
+        .channel::before {
+            content: '#';
+            margin-right: 6px;
+            font-weight: 600;
+            color: #8e9297;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #36393f;
+        }
+
+        .chat-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #202225;
+            box-shadow: 0 1px 0 rgba(4,4,5,0.2), 0 1.5px 0 rgba(6,6,7,0.05), 0 2px 0 rgba(4,4,5,0.05);
+        }
+
+        .chat-header::before {
+            content: '#';
+            margin-right: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #8e9297;
+        }
+
+        .chat-header-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 8px 0;
+            margin: 4px 0;
+            display: flex;
+            position: relative;
+        }
+
+        .message:hover {
+            background-color: #32353b;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #5865f2 0%, #4752c4 100%);
+            color: #fff;
+        }
+
+        .ai-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #fff;
+            margin-right: 8px;
+            font-size: 15px;
+        }
+
+        .message-timestamp {
+            font-size: 12px;
+            color: #72767d;
+        }
+
+        .message-text {
+            color: #dcddde;
+            line-height: 1.375;
+            font-size: 15px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-text code {
+            background-color: #2f3136;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .message-text pre {
+            background-color: #2f3136;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+        }
+
+        .message-text pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+        }
+
+        .chat-input-wrapper {
+            background-color: #40444b;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #dcddde;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .chat-input::placeholder {
+            color: #72767d;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .send-button:hover {
+            opacity: 0.9;
+        }
+
+        .thinking-panel {
+            width: 320px;
+            background-color: #2f3136;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #202225;
+        }
+
+        .thinking-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #202225;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .thinking-header::before {
+            content: '🧠';
+            margin-right: 8px;
+        }
+
+        .thinking-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #b9bbbe;
+        }
+
+        .commands-info {
+            background-color: #40444b;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #8e9297;
+            border-bottom: 1px solid #202225;
+        }
+
+        .command-tag {
+            background-color: #5865f2;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            margin: 0 4px;
+        }
+
+        .loading {
+            display: none;
+            color: #72767d;
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2e3136;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #202225;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1a1c1f;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="server-icon">🖋️</div>
+        </div>
+        
+        <div class="channels-sidebar">
+            <div class="server-header">
+                INK AI Server
+            </div>
+            <div class="channels-list">
+                <div class="channel-category">Text Channels</div>
+                <div class="channel active">general-chat</div>
+                <div class="channel-category">Commands</div>
+                <div class="channel">/train</div>
+                <div class="channel">/code</div>
+                <div class="channel">/svg</div>
+                <div class="channel">/clear</div>
+            </div>
+        </div>
+
+        <div class="main-chat">
+            <div class="chat-header">
+                <span class="chat-header-title">general-chat</span>
+            </div>
+            
+            <div class="commands-info">
+                <strong>Available Commands:</strong>
+                <span class="command-tag">/train</span>
+                <span class="command-tag">/code</span>
+                <span class="command-tag">/svg</span>
+                <span class="command-tag">/clear</span>
+            </div>
+
+            <div class="chat-messages" id="messages">
+                <div class="message">
+                    <div class="message-avatar ai-avatar">INK</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">INK AI</span>
+                            <span class="message-timestamp">Now</span>
+                        </div>
+                        <div class="message-text">Hello! I'm INK, your AI assistant powered by Gemini. I can help you with coding, generate SVG images, and answer your questions. Try using commands like /code or /svg!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="message-avatar ai-avatar">INK</div>
+                <div class="message-content">
+                    <div class="message-text">Thinking...</div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input" id="userInput" placeholder="Message #general-chat" autofocus>
+                    <button class="send-button" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="thinking-panel">
+            <div class="thinking-header">AI Thinking Process</div>
+            <div class="thinking-content" id="thinking">
+                Waiting for input...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const thinkingDiv = document.getElementById('thinking');
+        const loadingDiv = document.getElementById('loading');
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+            loadingDiv.classList.add('active');
+
+            updateThinking('Processing your message...');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                loadingDiv.classList.remove('active');
+                
+                addMessage(data.response, 'ai');
+                updateThinking(data.thinking);
+
+            } catch (error) {
+                loadingDiv.classList.remove('active');
+                addMessage('Error: Could not connect to server.', 'ai');
+                updateThinking('Error occurred: ' + error.message);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `message-avatar ${sender === 'user' ? 'user-avatar' : 'ai-avatar'}`;
+            avatarDiv.textContent = sender === 'user' ? 'YOU' : 'INK';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'message-header';
+            
+            const authorSpan = document.createElement('span');
+            authorSpan.className = 'message-author';
+            authorSpan.textContent = sender === 'user' ? 'You' : 'INK AI';
+            
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = 'message-timestamp';
+            timestampSpan.textContent = formatTime();
+            
+            headerDiv.appendChild(authorSpan);
+            headerDiv.appendChild(timestampSpan);
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            
+            if (text.includes('```')) {
+                const parts = text.split('```');
+                let html = '';
+                parts.forEach((part, index) => {
+                    if (index % 2 === 0) {
+                        html += escapeHtml(part);
+                    } else {
+                        html += '<pre><code>' + escapeHtml(part) + '</code></pre>';
+                    }
+                });
+                textDiv.innerHTML = html;
+            } else {
+                textDiv.textContent = text;
+            }
+            
+            contentDiv.appendChild(headerDiv);
+            contentDiv.appendChild(textDiv);
+            
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateThinking(text) {
+            thinkingDiv.textContent = text;
+            thinkingDiv.scrollTop = thinkingDiv.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/thinking');
+                const data = await response.json();
+                if (data.thinking) {
+                    updateThinking(data.thinking);
+                }
+            } catch (error) {
+                console.error('Error fetching thinking:', error);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
